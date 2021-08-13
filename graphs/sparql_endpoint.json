@@ -1,0 +1,126 @@
+{
+  "version": 2,
+  "width": 800,
+  "height": 400,
+  "padding": "strict",
+  "data": [
+    {
+      "name": "labels",
+      "values": [
+        { "is_automata": true, "label": "Automated/programmatic" },
+        { "is_automata": false, "label": "Detected as user" }
+      ]
+    },
+    {
+      "name": "visits",
+      "url": "tabular:///Sandbox/MPopov_(WMF)/WDQS_SPARQL_endpoint.tab",
+      "format": {
+        "type": "json",
+        "property": "data",
+        "parse": {
+          "date": "date:'%Y-%m-%d'"
+        }
+      },
+      "transform": [
+        {
+          "type": "filter",
+          "test": "datum.http_success == true"
+        },
+        {
+          "type": "lookup",
+          "on": "labels",
+          "onKey": "is_automata",
+          "keys": ["is_automata"],
+          "as": ["labels"],
+          "default": null
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {"name": "lastDate", "init": {"expr": "time('2021-04-25')"}}
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "time",
+      "domain": {
+        "data": "visits",
+        "field": "date"
+      },
+      "range": "width"
+    },
+    {
+      "name": "y",
+      "type": "log",
+      "domain": {
+        "data": "visits",
+        "field": "requests"
+      },
+      "range": "height"
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": {
+        "data": "visits",
+        "field": "is_automata"
+      },
+      "range": "category10"
+    }
+  ],
+  "axes": [
+    {
+      "type": "y",
+      "scale": "y",
+      "title": "Requests (log10 scale)",
+      "grid": true,
+      "layer": "back"
+    },
+    {
+      "type": "x",
+      "scale": "x",
+      "grid": false,
+      "layer": "back",
+      "formatType": "time",
+      "format": "%Y"
+    }
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "from": {
+        "data": "visits",
+        "transform": [{"type": "facet", "groupby": ["is_automata"]}]
+      },
+      "marks": [
+        {
+          "type": "line",
+          "properties": {
+            "update": {
+              "x": {"scale": "x", "field": "date"},
+              "y": {"scale": "y", "field": "requests"},
+              "stroke": {"scale": "color", "field": "is_automata"},
+              "strokeWidth": {"value": 1}
+            }
+          }
+        },
+        {
+          "type": "text",
+          "from": {
+            "transform": [{"type": "filter", "test": "datum.date > lastDate"}]
+          },
+          "properties": {
+            "update": {
+              "x": {"scale": "x", "field": "date", "offset": 2},
+              "y": {"scale": "y", "field": "requests"},
+              "fill": {"scale": "color", "field": "is_automata"},
+              "text": {"field": "labels.label"},
+              "baseline": {"value": "middle"}
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
