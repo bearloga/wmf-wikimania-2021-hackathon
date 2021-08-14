@@ -38,7 +38,16 @@
     }
   ],
   "signals": [
-    {"name": "lastDate", "init": {"expr": "time('2021-04-25')"}}
+    {"name": "lastDate", "init": {"expr": "time('2021-04-25')"}},
+    {
+      "name": "indexDate",
+      "init": {"expr": "time('Aug 15 2015')"},
+      "streams": [{
+        "type": "mousemove",
+        "expr": "clamp(eventX(), 0, eventGroup('root').width)",
+        "scale": {"name": "x", "invert": true}
+      }]
+    }
   ],
   "scales": [
     {
@@ -121,6 +130,29 @@
           }
         }
       ]
+    },
+    {
+      "type":"rule",
+      "properties": {
+        "update": {
+          "x": {"scale": "x", "signal": "indexDate"},
+          "y": {"value": 0},
+          "y2": {"field": {"group": "height"}},
+          "stroke": {"value": "black"}
+        }
+      }
+    },
+    {
+      "type":"text",
+      "properties": {
+        "update": {
+          "x": {"scale": "x", "signal": "indexDate"},
+          "y2": {"value": 0, "offset": -5},
+          "align": {"value": "center"},
+          "text": {"template": "\u007B{indexDate | time: '%e %B %Y'}}"},
+          "fill": {"value": "black"}
+        }
+      }
     }
   ]
 }
